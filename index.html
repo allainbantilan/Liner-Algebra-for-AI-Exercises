@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 101 • Linear Algebra — Module 3 Exercises (Final Exam Coverage)</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            board: {
+              bg: '#090e1a',
+              surface: '#111827',
+              card: '#162033',
+              hover: '#1e2c46',
+              border: '#263552',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #090e1a;
+      color: #f1f5f9;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.09), transparent 38%),
+        radial-gradient(circle at 85% 88%, rgba(99, 102, 241, 0.10), transparent 42%);
+      min-height: 100vh;
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Card hover lift */
+    .module-card {
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
+    .module-card:hover {
+      transform: translateY(-4px);
+    }
+    .module-card:active {
+      transform: translateY(-1px) scale(0.995);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200 flex flex-col justify-between">
+
+  <!-- Main Wrapper -->
+  <div class="max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 flex flex-col gap-8">
+
+    <!-- Hero Header Banner -->
+    <header class="bg-board-surface/90 backdrop-blur-md border border-board-border rounded-3xl p-6 sm:p-9 shadow-2xl relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-16 -bottom-16 w-64 h-64 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
+
+      <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="space-y-3">
+          <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-sky-500/15 border border-sky-400/30 text-sky-300 text-xs font-bold tracking-wider uppercase">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+            AI 101 • Linear Algebra for AI
+          </div>
+
+          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+            AI 101 Module 3 Exercises
+          </h1>
+
+          <div class="flex flex-wrap items-center gap-2.5 pt-0.5">
+            <span class="px-3 py-1 rounded-lg bg-amber-500/15 border border-amber-400/35 text-amber-300 text-xs sm:text-sm font-extrabold tracking-wide uppercase">
+              Final Exam Coverage
+            </span>
+            <span class="text-sm sm:text-base text-slate-400 font-medium">
+              Vector Spaces &amp; Matrix Rank Interactive Quiz Boards
+            </span>
+          </div>
+        </div>
+
+        <!-- Quick Stats / Info Pill -->
+        <div class="bg-board-bg/90 border border-board-border rounded-2xl p-4 sm:p-5 flex items-center gap-5 shrink-0">
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Coverage</div>
+            <div class="font-mono text-xl sm:text-2xl font-extrabold text-white mt-0.5">5 Modules</div>
+          </div>
+          <div class="h-10 w-px bg-board-border"></div>
+          <div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Per Board</div>
+            <div class="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400 mt-0.5">30 PTS</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Module Links Grid -->
+    <main class="space-y-4">
+      <div class="flex items-center justify-between px-1">
+        <h2 class="text-sm sm:text-base font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <span class="w-2 h-5 rounded-full bg-sky-400 inline-block"></span>
+          Select a Topic to Launch Interactive Quiz Board
+        </h2>
+        <span class="text-xs text-slate-400 hidden sm:inline">Click any card to open</span>
+      </div>
+
+      <div id="modules-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-500 pt-2 pb-4 border-t border-slate-800/70">
+      AI 101 • Linear Algebra Interactive Classroom &amp; Review Hub
+    </footer>
+  </div>
+
+  <script>
+    const modules = [
+      {
+        code: '3.1',
+        title: 'VECTORS IN EUCLIDEAN SPACES',
+        subtitle: 'Points, components, magnitude, distance, and vectors in ℝⁿ',
+        url: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-1.html',
+        fallbackUrl: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-2.html',
+        accent: 'sky',
+        topics: ['Euclidean n-Space ℝⁿ', 'Vector Norm & Distance', 'Standard Unit Vectors']
+      },
+      {
+        code: '3.2',
+        title: 'VECTOR OPERATIONS',
+        subtitle: 'Addition, scalar multiplication, dot product, angle & cross product',
+        url: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-2.html',
+        accent: 'indigo',
+        topics: ['Dot & Cross Products', 'Orthogonality & Angles', 'Triple Products']
+      },
+      {
+        code: '3.3',
+        title: 'SUBSPACES OF Rⁿ',
+        subtitle: 'Closure axioms, zero vector test, linear combinations & span',
+        url: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-3.html',
+        accent: 'emerald',
+        topics: ['Subspace Axioms', 'Spanning Sets', 'Solution Space of AX = 0']
+      },
+      {
+        code: '3.4',
+        title: 'BASES AND DIMENSIONS',
+        subtitle: 'Linear independence, basis verification, coordinates & dimension',
+        url: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-4.html',
+        accent: 'amber',
+        topics: ['Linear Independence', 'Standard & Custom Bases', 'Dimension of Subspaces']
+      },
+      {
+        code: '3.5',
+        title: 'RANK OF A MATRIX',
+        subtitle: 'RREF reduction, row space, column space, rank & system consistency',
+        url: 'https://allainbantilan.github.io/Liner-Algebra-for-AI-Exercises/quiz-3-5.html',
+        accent: 'rose',
+        topics: ['Row & Column Space Basis', 'Rank via RREF', 'Consistency of AX = B']
+      }
+    ];
+
+    const accentStyles = {
+      sky: {
+        badge: 'bg-sky-500/20 text-sky-300 border-sky-400/35',
+        borderHover: 'hover:border-sky-400/70 hover:shadow-sky-950/40',
+        btn: 'bg-sky-600/20 group-hover:bg-sky-600 text-sky-300 group-hover:text-white border-sky-500/40',
+        dot: 'bg-sky-400'
+      },
+      indigo: {
+        badge: 'bg-indigo-500/20 text-indigo-300 border-indigo-400/35',
+        borderHover: 'hover:border-indigo-400/70 hover:shadow-indigo-950/40',
+        btn: 'bg-indigo-600/20 group-hover:bg-indigo-600 text-indigo-300 group-hover:text-white border-indigo-500/40',
+        dot: 'bg-indigo-400'
+      },
+      emerald: {
+        badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/35',
+        borderHover: 'hover:border-emerald-400/70 hover:shadow-emerald-950/40',
+        btn: 'bg-emerald-600/20 group-hover:bg-emerald-600 text-emerald-300 group-hover:text-white border-emerald-500/40',
+        dot: 'bg-emerald-400'
+      },
+      amber: {
+        badge: 'bg-amber-500/20 text-amber-300 border-amber-400/35',
+        borderHover: 'hover:border-amber-400/70 hover:shadow-amber-950/40',
+        btn: 'bg-amber-600/20 group-hover:bg-amber-500 text-amber-300 group-hover:text-slate-950 border-amber-500/40',
+        dot: 'bg-amber-400'
+      },
+      rose: {
+        badge: 'bg-rose-500/20 text-rose-300 border-rose-400/35',
+        borderHover: 'hover:border-rose-400/70 hover:shadow-rose-950/40',
+        btn: 'bg-rose-600/20 group-hover:bg-rose-600 text-rose-300 group-hover:text-white border-rose-500/40',
+        dot: 'bg-rose-400'
+      }
+    };
+
+    function renderModules() {
+      const grid = document.getElementById('modules-grid');
+      grid.innerHTML = '';
+
+      modules.forEach((mod) => {
+        const style = accentStyles[mod.accent];
+        const card = document.createElement('a');
+        card.href = mod.url;
+        card.className = `module-card group bg-board-card/95 hover:bg-board-hover border border-board-border ${style.borderHover} rounded-2xl p-6 flex flex-col justify-between shadow-xl focus:outline-none focus:ring-2 focus:ring-sky-400`;
+
+        const topicsHtml = mod.topics.map(t => `
+          <span class="inline-flex items-center gap-1.5 text-xs text-slate-300 bg-slate-900/80 border border-slate-700/80 px-2.5 py-1 rounded-lg">
+            <span class="w-1.5 h-1.5 rounded-full ${style.dot}"></span>
+            ${t}
+          </span>
+        `).join('');
+
+        card.innerHTML = `
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-sm font-extrabold px-3 py-1 rounded-lg border ${style.badge}">
+                MODULE ${mod.code}
+              </span>
+              <span class="text-xs font-semibold text-slate-400">
+                10 MC + Problem Solving
+              </span>
+            </div>
+
+            <div>
+              <h3 class="text-lg sm:text-xl font-extrabold text-white tracking-tight leading-snug group-hover:text-sky-200 transition">
+                ${mod.code} — ${mod.title}
+              </h3>
+              <p class="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed">
+                ${mod.subtitle}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5 pt-1">
+              ${topicsHtml}
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-700/60 flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-400 truncate max-w-[180px]">
+              ${mod.url.split('/').pop()}
+            </span>
+            <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition ${style.btn}">
+              Open Quiz Board
+              <svg class="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            </span>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', renderModules);
+  </script>
+</body>
+</html>
