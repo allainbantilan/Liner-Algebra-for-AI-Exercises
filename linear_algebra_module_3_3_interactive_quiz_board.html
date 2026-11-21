@@ -1,0 +1,1389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linear Algebra — Module 3.3: Subspaces of Rⁿ | Interactive Quiz Board</title>
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- KaTeX for crisp, fast mathematical rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Tone.js for subtle classroom UI sound effects (no external audio URLs) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            board: {
+              bg: '#090e1a',
+              surface: '#111827',
+              card: '#162033',
+              hover: '#1e2c46',
+              border: '#263552',
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #090e1a;
+      color: #f1f5f9;
+      background-image:
+        radial-gradient(circle at 15% 10%, rgba(56, 189, 248, 0.08), transparent 35%),
+        radial-gradient(circle at 85% 90%, rgba(99, 102, 241, 0.09), transparent 40%);
+      min-height: 100vh;
+    }
+
+    /* Custom subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Tile hover and active elevation */
+    .quiz-tile {
+      transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+    }
+    .quiz-tile:hover {
+      transform: translateY(-3px);
+    }
+    .quiz-tile:active {
+      transform: translateY(0px) scale(0.99);
+    }
+
+    /* Modal entrance animation */
+    @keyframes modalPop {
+      0% {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+    .modal-animate {
+      animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* KaTeX font size scaling for projector readability */
+    .katex {
+      font-size: 1.08em;
+    }
+    .solution-box .katex {
+      font-size: 1.05em;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-sky-500/30 selection:text-sky-200">
+
+  <!-- Main Container -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 flex flex-col gap-6">
+
+    <!-- Top Header & Control Dashboard -->
+    <header class="bg-board-surface/90 backdrop-blur-md border border-board-border rounded-2xl p-4 sm:p-6 shadow-2xl">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+
+        <!-- Title & Course Info -->
+        <div class="space-y-1.5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-400/25 text-sky-300 text-xs font-semibold tracking-wider uppercase">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+            AI 101 • Linear Algebra
+          </div>
+          <h1 class="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+            MODULE 3.3: SUBSPACES OF $\mathbb{R}^n$
+          </h1>
+          <p class="text-sm sm:text-base text-slate-400 font-medium">
+            Interactive Classroom Quiz Board <span class="text-sky-400 font-semibold">(30 Points Total)</span>
+          </p>
+        </div>
+
+        <!-- Timer & Progress Controls -->
+        <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+
+          <!-- Countdown Timer Widget -->
+          <div class="bg-board-bg border border-board-border rounded-xl px-3.5 py-2.5 flex flex-wrap items-center gap-3 shadow-inner">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="13" r="8"></circle>
+                <path d="M12 9v4l2.5 2.5M9 2h6M12 2v3"></path>
+              </svg>
+              <span id="timer-display" class="font-mono text-xl sm:text-2xl font-bold text-white tracking-wider">15:00</span>
+            </div>
+
+            <!-- Timer Presets & Custom -->
+            <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-lg border border-slate-800">
+              <button onclick="setTimerMinutes(5)" class="timer-preset px-2 py-1 text-xs font-semibold rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition" title="5 Minutes">5m</button>
+              <button onclick="setTimerMinutes(10)" class="timer-preset px-2 py-1 text-xs font-semibold rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition" title="10 Minutes">10m</button>
+              <button onclick="setTimerMinutes(15)" class="timer-preset px-2 py-1 text-xs font-semibold rounded-md bg-sky-600/30 text-sky-300 border border-sky-500/40 transition" title="15 Minutes">15m</button>
+              <button onclick="setTimerMinutes(20)" class="timer-preset px-2 py-1 text-xs font-semibold rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition" title="20 Minutes">20m</button>
+              <button onclick="openCustomTimerPrompt()" class="px-2 py-1 text-xs font-semibold rounded-md text-slate-400 hover:bg-slate-700 hover:text-white transition" title="Set Custom Minutes">Custom</button>
+            </div>
+
+            <!-- Start / Pause / Reset Timer Buttons -->
+            <div class="flex items-center gap-1.5">
+              <button id="timer-toggle-btn" onclick="toggleTimer()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide shadow transition flex items-center gap-1">
+                <span id="timer-toggle-text">Start</span>
+              </button>
+              <button onclick="resetTimer()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition" title="Reset Timer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Progress / Points Counter -->
+          <div class="bg-board-bg border border-board-border rounded-xl px-4 py-2.5 flex items-center gap-3">
+            <div>
+              <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Board Progress</div>
+              <div class="flex items-baseline gap-1.5">
+                <span id="points-completed" class="font-mono text-xl sm:text-2xl font-bold text-emerald-400">0</span>
+                <span class="text-sm text-slate-400 font-semibold">/ 30 pts</span>
+                <span id="tiles-completed-badge" class="ml-1 text-xs text-slate-400">(<span id="tiles-count">0</span>/14 tiles)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secondary Teacher Controls Bar -->
+      <div class="mt-4 pt-4 border-t border-board-border/80 flex flex-wrap items-center justify-between gap-3">
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-300">
+          <span class="font-semibold text-slate-400 uppercase tracking-wider text-xs">Tile Status:</span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm bg-board-card border border-slate-600"></span> Unopened
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm bg-amber-500/20 border border-amber-400"></span> Viewed / Active
+          </span>
+          <span class="inline-flex items-center gap-1.5">
+            <span class="w-3 h-3 rounded-sm bg-emerald-500/20 border border-emerald-400"></span> Answered / Revealed
+          </span>
+        </div>
+
+        <!-- Global Actions -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <!-- Sound Effects Toggle -->
+          <button id="sound-toggle-btn" onclick="toggleSound()" class="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs sm:text-sm font-medium text-slate-200 flex items-center gap-1.5 transition" title="Toggle Sound Effects">
+            <svg id="sound-icon-on" class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"></path>
+            </svg>
+            <svg id="sound-icon-off" class="w-4 h-4 text-slate-500 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path>
+            </svg>
+            <span id="sound-label">SFX: On</span>
+          </button>
+
+          <!-- Reveal All Answers Toggle -->
+          <button id="reveal-all-btn" onclick="toggleRevealAll()" class="px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/35 border border-indigo-500/40 text-indigo-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
+            <svg class="w-4 h-4 text-indigo-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <span id="reveal-all-text">Reveal All Answers</span>
+          </button>
+
+          <!-- Reset All Tiles Button -->
+          <button onclick="requestResetBoard()" class="px-3.5 py-2 rounded-xl bg-rose-600/15 hover:bg-rose-600/30 border border-rose-500/35 text-rose-200 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
+            <svg class="w-4 h-4 text-rose-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>Reset All Tiles</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Inline Custom Notification / Confirmation Banner (No alert/confirm used) -->
+    <div id="toast-banner" class="hidden bg-slate-800/95 border border-sky-500/40 rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+      <div class="flex items-center gap-2.5 text-sm text-slate-100" id="toast-message"></div>
+      <div class="flex items-center gap-2" id="toast-actions"></div>
+    </div>
+
+    <!-- SECTION 1: PART I — MULTIPLE CHOICE -->
+    <section class="bg-board-surface/75 border border-board-border rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2.5">
+            <span class="w-2.5 h-6 rounded-full bg-sky-400 inline-block"></span>
+            Part I — Multiple Choice
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Click any numbered tile (#1–#10) to display the question and test answers.</p>
+        </div>
+        <span class="self-start sm:self-auto px-3 py-1 rounded-lg bg-sky-500/15 border border-sky-400/30 text-sky-300 text-xs sm:text-sm font-bold">
+          10 Tiles • 1 pt each = 10 pts
+        </span>
+      </div>
+
+      <!-- 10 Multiple Choice Tiles Grid -->
+      <div id="mc-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3.5 sm:gap-4">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- SECTION 2: PART II — PROBLEM SOLVING -->
+    <section class="bg-board-surface/75 border border-board-border rounded-2xl p-4 sm:p-6 shadow-xl">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+        <div>
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2.5">
+            <span class="w-2.5 h-6 rounded-full bg-indigo-400 inline-block"></span>
+            Part II — Problem Solving
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-0.5">Click a problem card to open step-by-step subspace verification solutions ($S_1, S_2, S_3$).</p>
+        </div>
+        <span class="self-start sm:self-auto px-3 py-1 rounded-lg bg-indigo-500/15 border border-indigo-400/30 text-indigo-300 text-xs sm:text-sm font-bold">
+          4 Problems • 5 pts each = 20 pts
+        </span>
+      </div>
+
+      <!-- 4 Problem Solving Tiles Grid -->
+      <div id="pb-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- Footer Hint -->
+    <footer class="text-center text-xs text-slate-500 pb-4">
+      Tip: Click any tile to present • Use <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">←</kbd> <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">→</kbd> arrow keys to switch tiles and <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300">Esc</kbd> to return to the board.
+    </footer>
+  </div>
+
+  <!-- INTERACTIVE QUESTION MODAL -->
+  <div id="question-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-sm overflow-y-auto" role="dialog" aria-modal="true">
+    <div id="modal-card" class="modal-animate relative w-full max-w-4xl bg-board-surface border border-slate-700 rounded-2xl shadow-2xl overflow-hidden my-auto">
+
+      <!-- Modal Top Header -->
+      <div class="bg-slate-900/95 border-b border-slate-800 px-5 sm:px-7 py-4 flex items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span id="modal-badge" class="px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold tracking-wide uppercase bg-sky-500/20 text-sky-300 border border-sky-400/35">
+            MC #1 — 1 Point
+          </span>
+          <span id="modal-topic-tag" class="text-xs sm:text-sm font-medium text-slate-400">
+            Subspace Definition
+          </span>
+        </div>
+
+        <button onclick="closeModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition" title="Close (Esc)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body Content -->
+      <div id="modal-body" class="p-5 sm:p-8 max-h-[75vh] overflow-y-auto space-y-6">
+        <!-- Dynamically injected question & choices / sub-items -->
+      </div>
+
+      <!-- Modal Footer Navigation -->
+      <div class="bg-slate-900/95 border-t border-slate-800 px-5 sm:px-7 py-3.5 flex items-center justify-between gap-3">
+        <button id="prev-tile-btn" onclick="navigateTile(-1)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none text-slate-200 text-xs sm:text-sm font-semibold border border-slate-700 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Previous Tile
+        </button>
+
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl bg-slate-800/70 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium transition">
+          Back to Board
+        </button>
+
+        <button id="next-tile-btn" onclick="navigateTile(1)" class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 disabled:opacity-40 disabled:pointer-events-none text-white text-xs sm:text-sm font-semibold shadow flex items-center gap-1.5 transition">
+          Next Tile
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. QUIZ DATA DEFINITIONS (Module 3.3: Subspaces of R^n)
+    // =========================================================================
+    const quizTiles = [
+      // --- PART I: MULTIPLE CHOICE (10 items, 1 pt each) ---
+      {
+        id: 'mc-1',
+        type: 'mc',
+        number: 1,
+        shortLabel: '#1',
+        title: 'MC #1',
+        topic: 'Subspace Definition',
+        points: 1,
+        question: 'Which of the following must be satisfied for a nonempty subset $U$ of $\\mathbb{R}^n$ to be a subspace of $\\mathbb{R}^n$?',
+        choices: [
+          { key: 'A', text: '$U$ must contain at least $n$ vectors and be closed under vector cross product.' },
+          { key: 'B', text: '$U$ must be closed under addition and scalar multiplication.' },
+          { key: 'C', text: 'Every vector in $U$ must have unit length.' },
+          { key: 'D', text: '$U$ must be equal to $\\mathbb{R}^n$.' }
+        ],
+        correctKey: 'B',
+        explanation: 'A nonempty subset $U$ of $\\mathbb{R}^n$ forms a subspace if it is closed under vector addition ($S_2$) and closed under scalar multiplication ($S_3$), which also guarantees $\\mathbf{0} \\in U$ ($S_1$).'
+      },
+      {
+        id: 'mc-2',
+        type: 'mc',
+        number: 2,
+        shortLabel: '#2',
+        title: 'MC #2',
+        topic: 'Subspace Axioms (S₁)',
+        points: 1,
+        question: 'Which property corresponds to condition $S_1$ for a subset $U$ of $\\mathbb{R}^n$ to be a subspace?',
+        choices: [
+          { key: 'A', text: 'If $\\mathbf{x} \\in U$, then $r\\mathbf{x} \\in U$ for every real number $r$.' },
+          { key: 'B', text: 'If $\\mathbf{x} \\in U$ and $\\mathbf{y} \\in U$, then $\\mathbf{x} + \\mathbf{y} \\in U$.' },
+          { key: 'C', text: 'The zero vector $\\mathbf{0}$ is an element of $U$ ($\\mathbf{0} \\in U$).' },
+          { key: 'D', text: 'Every element of $U$ has an additive inverse in $\\mathbb{R}^n$.' }
+        ],
+        correctKey: 'C',
+        explanation: 'Condition $S_1$ checks whether the zero vector $\\mathbf{0}$ belongs to $U$. $S_2$ checks closure under addition, and $S_3$ checks closure under scalar multiplication.'
+      },
+      {
+        id: 'mc-3',
+        type: 'mc',
+        number: 3,
+        shortLabel: '#3',
+        title: 'MC #3',
+        topic: 'Zero Vector Test in R³',
+        points: 1,
+        question: 'Let $W$ be the set of all vectors in $\\mathbb{R}^3$ of the form $(a, a, a+2)$. Why is $W$ <strong>not</strong> a subspace of $\\mathbb{R}^3$?',
+        choices: [
+          { key: 'A', text: 'It is not closed under vector addition.' },
+          { key: 'B', text: 'It is not closed under scalar multiplication.' },
+          { key: 'C', text: 'The zero vector $(0, 0, 0)$ is not in $W$.' },
+          { key: 'D', text: 'Vectors in $\\mathbb{R}^3$ cannot have repeated components.' }
+        ],
+        correctKey: 'C',
+        explanation: 'Equating $(a, a, a+2) = (0, 0, 0)$ gives $a = 0$ and $a + 2 = 0 \\implies a = -2$, which is inconsistent. Thus $(0,0,0) \\notin W$.'
+      },
+      {
+        id: 'mc-4',
+        type: 'mc',
+        number: 4,
+        shortLabel: '#4',
+        title: 'MC #4',
+        topic: 'Closure Under Addition (S₂)',
+        points: 1,
+        question: 'Let $W$ be the set of all vectors in $\\mathbb{R}^3$ of the form $(a, a^2, b)$. Which property fails for $W$?',
+        choices: [
+          { key: 'A', text: '$S_1$ (contains the zero vector)' },
+          { key: 'B', text: '$S_2$ (closed under addition)' },
+          { key: 'C', text: 'Nonemptiness' },
+          { key: 'D', text: 'Dimension greater than $3$' }
+        ],
+        correctKey: 'B',
+        explanation: '$(a, a^2, b) + (c, c^2, d) = (a+c,\\; a^2+c^2,\\; b+d) \\neq (a+c,\\; (a+c)^2,\\; b+d)$ in general, so $W$ is not closed under addition.'
+      },
+      {
+        id: 'mc-5',
+        type: 'mc',
+        number: 5,
+        shortLabel: '#5',
+        title: 'MC #5',
+        topic: 'Identifying Subspaces of R³',
+        points: 1,
+        question: 'Which of the following subsets of $\\mathbb{R}^3$ is a subspace of $\\mathbb{R}^3$?',
+        choices: [
+          { key: 'A', text: 'Vectors of the form $(a, b, 2)$' },
+          { key: 'B', text: 'Vectors of the form $(a, b, c)$ where $c > 0$' },
+          { key: 'C', text: 'Vectors of the form $(a, b, a+3)$' },
+          { key: 'D', text: 'Vectors of the form $(a, b, c)$ where $a + b + c = 0$' }
+        ],
+        correctKey: 'D',
+        explanation: 'The homogeneous plane $a + b + c = 0$ contains $(0,0,0)$ and is closed under addition and scalar multiplication. Choices A, B, and C do not contain $(0,0,0)$.'
+      },
+      {
+        id: 'mc-6',
+        type: 'mc',
+        number: 6,
+        shortLabel: '#6',
+        title: 'MC #6',
+        topic: 'Inequality Constraints',
+        points: 1,
+        question: 'Consider the subset of $\\mathbb{R}^3$ consisting of all vectors of the form $(a, b, c)$ where $c > 0$. Which condition immediately shows it is not a subspace?',
+        choices: [
+          { key: 'A', text: '$(0, 0, 0)$ does not satisfy $c > 0$.' },
+          { key: 'B', text: 'Adding two vectors with $c > 0$ gives a negative third component.' },
+          { key: 'C', text: 'Multiplying by a positive scalar violates $c > 0$.' },
+          { key: 'D', text: 'It is an empty set.' }
+        ],
+        correctKey: 'A',
+        explanation: 'For the zero vector $(0,0,0)$, the third component is $c = 0$, which does not satisfy $c > 0$, failing condition $S_1$.'
+      },
+      {
+        id: 'mc-7',
+        type: 'mc',
+        number: 7,
+        shortLabel: '#7',
+        title: 'MC #7',
+        topic: 'Identifying Subspaces of R⁴',
+        points: 1,
+        question: 'Which of the following subsets of $\\mathbb{R}^4$ is a subspace of $\\mathbb{R}^4$?',
+        choices: [
+          { key: 'A', text: 'Vectors $(a, b, c, d)$ where $a - b = 2$' },
+          { key: 'B', text: 'Vectors $(a, b, c, d)$ where $a = 0$ and $b = -d$' },
+          { key: 'C', text: 'Vectors $(a, b, c, d)$ where $a + b + c + d = 1$' },
+          { key: 'D', text: 'Vectors $(a, b, c, d)$ where $c = 1$' }
+        ],
+        correctKey: 'B',
+        explanation: 'Vectors of the form $(0, -d, c, d)$ contain $(0,0,0,0)$ and remain closed under vector addition and scalar multiplication. Choices A, C, and D fail $S_1$.'
+      },
+      {
+        id: 'mc-8',
+        type: 'mc',
+        number: 8,
+        shortLabel: '#8',
+        title: 'MC #8',
+        topic: 'Line Through the Origin in R³',
+        points: 1,
+        question: 'Let $U$ be the subset of $\\mathbb{R}^3$ of the form $(a, 4a, -3a)$. What is the sum of $(1, 4, -3)$ and $(2, 8, -6)$?',
+        choices: [
+          { key: 'A', text: '$(3, 12, -9)$, which is in $U$' },
+          { key: 'B', text: '$(3, 8, -3)$, which is not in $U$' },
+          { key: 'C', text: '$(2, 12, -9)$, which is in $U$' },
+          { key: 'D', text: '$(3, 12, 9)$, which is not in $U$' }
+        ],
+        correctKey: 'A',
+        explanation: '$(1, 4, -3) + (2, 8, -6) = (3, 12, -9) = (3, 4(3), -3(3))$, which fits the form $(a, 4a, -3a)$ with $a = 3$, so it is in $U$.'
+      },
+      {
+        id: 'mc-9',
+        type: 'mc',
+        number: 9,
+        shortLabel: '#9',
+        title: 'MC #9',
+        topic: 'Nonlinear Product Constraints',
+        points: 1,
+        question: 'Consider the set of all vectors in $\\mathbb{R}^3$ of the form $(a, b, c)$ where $ab = 0$. Why is this set <strong>not</strong> a subspace of $\\mathbb{R}^3$?',
+        choices: [
+          { key: 'A', text: 'It does not contain $(0, 0, 0)$.' },
+          { key: 'B', text: 'For $\\mathbf{x} = (1, 0, 0)$ and $\\mathbf{y} = (0, 1, 0)$ in the set, $\\mathbf{x} + \\mathbf{y} = (1, 1, 0)$ has $ab = 1 \\neq 0$.' },
+          { key: 'C', text: 'Multiplying by $-1$ fails closure under scalar multiplication.' },
+          { key: 'D', text: 'It is not a subset of $\\mathbb{R}^3$.' }
+        ],
+        correctKey: 'B',
+        explanation: 'Both $\\mathbf{x} = (1,0,0)$ ($1\\cdot 0 = 0$) and $\\mathbf{y} = (0,1,0)$ ($0\\cdot 1 = 0$) belong to the set, but $\\mathbf{x} + \\mathbf{y} = (1,1,0)$ violates $ab = 0$, failing $S_2$.'
+      },
+      {
+        id: 'mc-10',
+        type: 'mc',
+        number: 10,
+        shortLabel: '#10',
+        title: 'MC #10',
+        topic: 'Scalar Field Closure Over R',
+        points: 1,
+        question: 'Which subset of $\\mathbb{R}^3$, defined by the number type of its components $(a, b, c)$, forms a subspace over the real scalars $\\mathbb{R}$?',
+        choices: [
+          { key: 'A', text: '$a, b,$ and $c$ are integers' },
+          { key: 'B', text: '$a, b,$ and $c$ are nonnegative real numbers' },
+          { key: 'C', text: '$a, b,$ and $c$ are rational numbers' },
+          { key: 'D', text: 'None of the above over $\\mathbb{R}$' }
+        ],
+        correctKey: 'D',
+        explanation: 'Over real scalars $\\mathbb{R}$, multiplying by $r = \\sqrt{2}$ takes vectors out of $\\mathbb{Z}^3$ and $\\mathbb{Q}^3$, and multiplying by $r = -1$ takes positive vectors out of the nonnegative octant ($S_3$ fails in all three).'
+      },
+
+      // --- PART II: PROBLEM SOLVING (4 Problems × 5 pts = 20 pts total) ---
+      {
+        id: 'pb-1',
+        type: 'pb',
+        code: 'PB-1',
+        title: 'Plane Through the Origin in R³',
+        topic: 'Subspace Verification in R³',
+        points: 5,
+        prompt: 'Determine whether the set $U$ of all vectors in $\\mathbb{R}^3$ of the form $(a, b, c)$ where $c = a + b$ is a subspace of $\\mathbb{R}^3$. Check $S_1$, $S_2$, and $S_3$.',
+        subItems: [
+          {
+            label: 'S₁)',
+            question: 'Zero Vector Condition ($\\mathbf{0} \\in U$)',
+            points: 1,
+            solution: 'Setting $a = 0$ and $b = 0$ gives $c = 0 + 0 = 0$, so $(0, 0, 0) \\in U$. Thus, $U$ is closed under the zero vector.'
+          },
+          {
+            label: 'S₂)',
+            question: 'Closure Under Addition ($\\mathbf{x} + \\mathbf{y} \\in U$)',
+            points: 2,
+            solution: 'Let $\\mathbf{x} = (a_1, b_1, a_1 + b_1)$ and $\\mathbf{y} = (a_2, b_2, a_2 + b_2)$ be in $U$. Then:\n$$\\mathbf{x} + \\mathbf{y} = (a_1 + a_2,\\; b_1 + b_2,\\; (a_1 + a_2) + (b_1 + b_2)) \\in U$$\nSince the third component equals the sum of the first two, $U$ is closed under addition.'
+          },
+          {
+            label: 'S₃)',
+            question: 'Closure Under Scalar Multiplication & Conclusion ($r\\mathbf{x} \\in U$)',
+            points: 2,
+            solution: 'For any real scalar $r$,\n$$r\\mathbf{x} = (ra_1,\\; rb_1,\\; r(a_1 + b_1)) = (ra_1,\\; rb_1,\\; ra_1 + rb_1) \\in U$$\n<strong>Conclusion:</strong> Since $S_1$, $S_2$, and $S_3$ hold, $U$ <strong>is a subspace</strong> of $\\mathbb{R}^3$.'
+          }
+        ]
+      },
+      {
+        id: 'pb-2',
+        type: 'pb',
+        code: 'PB-2',
+        title: 'Shifted Plane in R³',
+        topic: 'Testing Non-Subspaces in R³',
+        points: 5,
+        prompt: 'Determine whether the set $W$ of all vectors in $\\mathbb{R}^3$ of the form $(a, b, a + 3)$ is a subspace of $\\mathbb{R}^3$.',
+        subItems: [
+          {
+            label: 'S₁)',
+            question: 'Zero Vector Test ($(0,0,0) \\in W$?)',
+            points: 2,
+            solution: 'Equating $(a, b, a+3) = (0, 0, 0)$ yields:\n$$a = 0, \\quad b = 0, \\quad a + 3 = 0 \\implies a = -3$$\nThis system has no solution ($0 \\neq -3$), so $(0, 0, 0) \\notin W$.'
+          },
+          {
+            label: 'S₂ & S₃)',
+            question: 'Counterexample for Closure & Final Conclusion',
+            points: 3,
+            solution: 'Even for $(0, 0, 3) \\in W$, we get $(0, 0, 3) + (0, 0, 3) = (0, 0, 6) \\notin W$ (since $0 + 3 \\neq 6$), and $2(0, 0, 3) = (0, 0, 6) \\notin W$.\n<strong>Conclusion:</strong> $W$ is <strong>not a subspace</strong> of $\\mathbb{R}^3$.'
+          }
+        ]
+      },
+      {
+        id: 'pb-3',
+        type: 'pb',
+        code: 'PB-3',
+        title: 'Linearly Constrained Set in R⁴',
+        topic: 'Subspace Verification in R⁴',
+        points: 5,
+        prompt: 'Determine whether the set $V$ of all vectors in $\\mathbb{R}^4$ of the form $(a, b, c, d)$ where $c = a + 2b$ and $d = a - 3b$ is a subspace of $\\mathbb{R}^4$.',
+        subItems: [
+          {
+            label: 'S₁)',
+            question: 'Zero Vector Condition ($\\mathbf{0} \\in V$)',
+            points: 1,
+            solution: 'Setting $a = 0$ and $b = 0$ gives $c = 0 + 2(0) = 0$ and $d = 0 - 3(0) = 0$, so $(0, 0, 0, 0) \\in V$.'
+          },
+          {
+            label: 'S₂)',
+            question: 'Closure Under Addition ($\\mathbf{x} + \\mathbf{y} \\in V$)',
+            points: 2,
+            solution: 'Let $\\mathbf{x} = (a_1, b_1, a_1+2b_1, a_1-3b_1)$ and $\\mathbf{y} = (a_2, b_2, a_2+2b_2, a_2-3b_2)$. Letting $A = a_1 + a_2$ and $B = b_1 + b_2$:\n$$\\mathbf{x} + \\mathbf{y} = (A,\\; B,\\; A + 2B,\\; A - 3B) \\in V$$'
+          },
+          {
+            label: 'S₃)',
+            question: 'Closure Under Scalar Multiplication & Conclusion ($r\\mathbf{x} \\in V$)',
+            points: 2,
+            solution: 'For any real scalar $r$, letting $A\' = ra_1$ and $B\' = rb_1$:\n$$r\\mathbf{x} = (A\',\\; B\',\\; A\' + 2B\',\\; A\' - 3B\') \\in V$$\n<strong>Conclusion:</strong> Since $S_1$, $S_2$, and $S_3$ all hold, $V$ <strong>is a subspace</strong> of $\\mathbb{R}^4$.'
+          }
+        ]
+      },
+      {
+        id: 'pb-4',
+        type: 'pb',
+        code: 'PB-4',
+        title: 'Affine Hyperplane in R⁴',
+        topic: 'Testing Non-Subspaces in R⁴',
+        points: 5,
+        prompt: 'Determine whether the set $S$ of all vectors in $\\mathbb{R}^4$ of the form $(a, b, c, d)$ where $a - b = 2$ is a subspace of $\\mathbb{R}^4$.',
+        subItems: [
+          {
+            label: 'S₁)',
+            question: 'Zero Vector Test ($(0,0,0,0) \\in S$?)',
+            points: 2,
+            solution: 'Testing the zero vector $(0, 0, 0, 0)$ in the defining condition $a - b = 2$:\n$$0 - 0 = 0 \\neq 2$$\nTherefore, $(0, 0, 0, 0) \\notin S$.'
+          },
+          {
+            label: 'S₂ & S₃)',
+            question: 'Counterexample for Closure & Final Conclusion',
+            points: 3,
+            solution: 'For $\\mathbf{x} = (2, 0, 0, 0) \\in S$ ($2 - 0 = 2$), multiplying by $r = 2$ gives $2\\mathbf{x} = (4, 0, 0, 0)$, where $4 - 0 = 4 \\neq 2$, so $2\\mathbf{x} \\notin S$.\n<strong>Conclusion:</strong> $S$ is <strong>not a subspace</strong> of $\\mathbb{R}^4$.'
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE
+    // =========================================================================
+    const state = {
+      tiles: {},
+      activeTileIndex: null,
+      revealAllActive: false,
+      soundEnabled: true,
+      timer: {
+        defaultSeconds: 15 * 60,
+        remainingSeconds: 15 * 60,
+        isRunning: false,
+        intervalId: null
+      }
+    };
+
+    function initTileState() {
+      quizTiles.forEach(tile => {
+        state.tiles[tile.id] = {
+          viewed: false,
+          answered: false,
+          selectedChoice: null,
+          revealedSubItems: tile.type === 'pb' ? tile.subItems.map(() => false) : []
+        };
+      });
+    }
+
+    // =========================================================================
+    // 3. SOUND EFFECTS (Tone.js synthesized tones, safe fallback)
+    // =========================================================================
+    function playTone(type) {
+      if (!state.soundEnabled || typeof Tone === 'undefined') return;
+      try {
+        if (Tone.context.state !== 'running') {
+          Tone.start();
+        }
+        const synth = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.12, sustain: 0.05, release: 0.2 }
+        }).toDestination();
+        synth.volume.value = -12;
+
+        if (type === 'click') {
+          synth.triggerAttackRelease('C5', '32n');
+        } else if (type === 'correct') {
+          synth.triggerAttackRelease('E5', '16n');
+          setTimeout(() => synth.triggerAttackRelease('G5', '16n'), 70);
+        } else if (type === 'wrong') {
+          synth.triggerAttackRelease('Eb4', '16n');
+          setTimeout(() => synth.triggerAttackRelease('C4', '16n'), 90);
+        } else if (type === 'reveal') {
+          synth.triggerAttackRelease('G5', '32n');
+        } else if (type === 'alarm') {
+          synth.triggerAttackRelease('A5', '8n');
+          setTimeout(() => synth.triggerAttackRelease('A5', '8n'), 220);
+          setTimeout(() => synth.triggerAttackRelease('A5', '4n'), 440);
+        }
+      } catch (e) {
+        // Ignore audio errors if browser blocks autoplay
+      }
+    }
+
+    function toggleSound() {
+      state.soundEnabled = !state.soundEnabled;
+      const label = document.getElementById('sound-label');
+      const iconOn = document.getElementById('sound-icon-on');
+      const iconOff = document.getElementById('sound-icon-off');
+      if (state.soundEnabled) {
+        label.textContent = 'SFX: On';
+        iconOn.classList.remove('hidden');
+        iconOff.classList.add('hidden');
+        playTone('click');
+      } else {
+        label.textContent = 'SFX: Off';
+        iconOn.classList.add('hidden');
+        iconOff.classList.remove('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 4. KATEX MATH RENDER HELPER
+    // =========================================================================
+    function renderMathIn(element) {
+      if (typeof renderMathInElement === 'function' && element) {
+        try {
+          renderMathInElement(element, {
+            delimiters: [
+              { left: '$$', right: '$$', display: true },
+              { left: '$', right: '$', display: false }
+            ],
+            throwOnError: false
+          });
+        } catch (err) {
+          console.warn('KaTeX render warning:', err);
+        }
+      }
+    }
+
+    // =========================================================================
+    // 5. RENDER QUIZ BOARD TILES & PROGRESS
+    // =========================================================================
+    function renderBoard() {
+      const mcGrid = document.getElementById('mc-grid');
+      const pbGrid = document.getElementById('pb-grid');
+
+      mcGrid.innerHTML = '';
+      pbGrid.innerHTML = '';
+
+      let totalEarnedPoints = 0;
+      let completedTilesCount = 0;
+
+      quizTiles.forEach((tile, index) => {
+        const tState = state.tiles[tile.id];
+
+        // Calculate earned points for progress tracker
+        if (tile.type === 'mc') {
+          if (tState.answered) {
+            totalEarnedPoints += tile.points;
+            completedTilesCount += 1;
+          }
+        } else if (tile.type === 'pb') {
+          let subPts = 0;
+          tile.subItems.forEach((sub, sIdx) => {
+            if (tState.revealedSubItems[sIdx]) {
+              subPts += sub.points;
+            }
+          });
+          totalEarnedPoints += subPts;
+          if (tState.answered) {
+            completedTilesCount += 1;
+          }
+        }
+
+        // Determine visual styling based on tile state
+        let cardClasses = 'bg-board-card hover:bg-board-hover border-board-border text-white';
+        let statusBadge = `<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Unopened</span>`;
+
+        if (tState.answered) {
+          cardClasses = 'bg-emerald-950/45 hover:bg-emerald-900/50 border-emerald-500/60 text-white shadow-lg shadow-emerald-950/30';
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+              </svg>
+              Answered
+            </span>`;
+        } else if (tState.viewed) {
+          cardClasses = 'bg-amber-950/35 hover:bg-amber-900/40 border-amber-400/60 text-white shadow-lg shadow-amber-950/20';
+          statusBadge = `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold">
+              Active
+            </span>`;
+        }
+
+        if (tile.type === 'mc') {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => openTileModal(index);
+          btn.className = `quiz-tile group relative rounded-xl border p-4 flex flex-col justify-between text-left min-h-[116px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 ${cardClasses}`;
+
+          btn.innerHTML = `
+            <div class="flex items-center justify-between w-full gap-2">
+              <span class="font-mono text-2xl sm:text-3xl font-extrabold tracking-tight ${tState.answered ? 'text-emerald-300' : 'text-sky-300 group-hover:text-sky-200'}">
+                ${tile.shortLabel}
+              </span>
+              <span class="px-2 py-0.5 rounded-md bg-slate-900/80 border border-slate-700/80 text-[11px] font-bold text-slate-300">
+                1 PT
+              </span>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-medium text-slate-300 line-clamp-1 mb-1.5">${tile.topic}</div>
+              <div>${statusBadge}</div>
+            </div>
+          `;
+          mcGrid.appendChild(btn);
+        } else {
+          // Problem Solving Tile
+          const revealedCount = tState.revealedSubItems.filter(Boolean).length;
+          const totalSubs = tile.subItems.length;
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.onclick = () => openTileModal(index);
+          btn.className = `quiz-tile group relative rounded-2xl border p-5 flex flex-col justify-between text-left min-h-[160px] cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-400 ${cardClasses}`;
+
+          btn.innerHTML = `
+            <div class="flex items-start justify-between w-full gap-3">
+              <div>
+                <span class="inline-block font-mono text-sm font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 mb-2">
+                  ${tile.code}
+                </span>
+                <h3 class="text-base sm:text-lg font-bold text-white leading-snug group-hover:text-indigo-200 transition">
+                  ${tile.title}
+                </h3>
+              </div>
+              <span class="shrink-0 px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-700 text-xs sm:text-sm font-extrabold text-indigo-300">
+                ${tile.points} PTS
+              </span>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-700/60 flex items-center justify-between gap-2 w-full">
+              <span class="text-xs text-slate-400 font-medium">
+                ${totalSubs} steps (${revealedCount}/${totalSubs} revealed)
+              </span>
+              <div>${statusBadge}</div>
+            </div>
+          `;
+          pbGrid.appendChild(btn);
+        }
+      });
+
+      // Update header counters
+      document.getElementById('points-completed').textContent = totalEarnedPoints;
+      document.getElementById('tiles-count').textContent = completedTilesCount;
+      renderMathIn(document.body);
+    }
+
+    // =========================================================================
+    // 6. MODAL RENDERING & INTERACTIONS
+    // =========================================================================
+    function openTileModal(index) {
+      if (index < 0 || index >= quizTiles.length) return;
+      state.activeTileIndex = index;
+      const tile = quizTiles[index];
+      state.tiles[tile.id].viewed = true;
+
+      playTone('click');
+      renderBoard();
+      renderModalContent();
+
+      const modal = document.getElementById('question-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('question-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      state.activeTileIndex = null;
+      renderBoard();
+    }
+
+    function navigateTile(delta) {
+      if (state.activeTileIndex === null) return;
+      const nextIdx = state.activeTileIndex + delta;
+      if (nextIdx >= 0 && nextIdx < quizTiles.length) {
+        openTileModal(nextIdx);
+      }
+    }
+
+    function renderModalContent() {
+      const index = state.activeTileIndex;
+      if (index === null) return;
+
+      const tile = quizTiles[index];
+      const tState = state.tiles[tile.id];
+
+      // Update Header Badge & Topic
+      const badgeEl = document.getElementById('modal-badge');
+      const topicEl = document.getElementById('modal-topic-tag');
+      if (tile.type === 'mc') {
+        badgeEl.textContent = `${tile.title} — ${tile.points} Point`;
+        badgeEl.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold tracking-wide uppercase bg-sky-500/20 text-sky-300 border border-sky-400/35';
+      } else {
+        badgeEl.textContent = `${tile.code} — ${tile.points} Points`;
+        badgeEl.className = 'px-3 py-1 rounded-lg text-xs sm:text-sm font-extrabold tracking-wide uppercase bg-indigo-500/20 text-indigo-300 border border-indigo-400/35';
+      }
+      topicEl.textContent = tile.topic;
+
+      // Update Prev / Next Buttons
+      document.getElementById('prev-tile-btn').disabled = index === 0;
+      document.getElementById('next-tile-btn').disabled = index === quizTiles.length - 1;
+
+      const bodyEl = document.getElementById('modal-body');
+
+      if (tile.type === 'mc') {
+        // Build Multiple Choice Modal View
+        const isAnswered = tState.answered;
+        const selectedKey = tState.selectedChoice;
+
+        let choicesHtml = tile.choices.map(choice => {
+          const isCorrect = choice.key === tile.correctKey;
+          const isSelectedWrong = selectedKey === choice.key && !isCorrect;
+
+          let btnStyle = 'bg-board-card hover:bg-board-hover border-slate-700 text-slate-100';
+          let keyBadgeStyle = 'bg-slate-800 text-slate-300 border-slate-600';
+          let statusIcon = '';
+
+          if (isAnswered && isCorrect) {
+            btnStyle = 'bg-emerald-950/65 border-emerald-400 text-white shadow-lg shadow-emerald-950/40';
+            keyBadgeStyle = 'bg-emerald-500 text-slate-950 border-emerald-300 font-extrabold';
+            statusIcon = `
+              <span class="ml-auto inline-flex items-center gap-1 text-emerald-300 text-xs sm:text-sm font-bold shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Correct
+              </span>`;
+          } else if (isSelectedWrong) {
+            btnStyle = 'bg-rose-950/60 border-rose-500 text-rose-100';
+            keyBadgeStyle = 'bg-rose-500 text-white border-rose-300 font-extrabold';
+            statusIcon = `
+              <span class="ml-auto inline-flex items-center gap-1 text-rose-300 text-xs sm:text-sm font-bold shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Incorrect
+              </span>`;
+          }
+
+          return `
+            <button type="button" onclick="selectMcChoice('${tile.id}', '${choice.key}')"
+              class="w-full text-left rounded-xl border p-4 sm:p-5 flex items-center gap-4 transition cursor-pointer ${btnStyle}">
+              <span class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg border flex items-center justify-center font-mono text-base sm:text-lg font-bold shrink-0 ${keyBadgeStyle}">
+                ${choice.key}
+              </span>
+              <span class="text-base sm:text-lg font-medium leading-snug">${choice.text}</span>
+              ${statusIcon}
+            </button>
+          `;
+        }).join('');
+
+        const explanationHtml = isAnswered ? `
+          <div class="rounded-xl bg-emerald-950/35 border border-emerald-500/40 p-4 sm:p-5 space-y-1.5">
+            <div class="text-xs font-extrabold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              Answer Explanation (Correct Choice: ${tile.correctKey})
+            </div>
+            <p class="text-sm sm:text-base text-slate-200 leading-relaxed">${tile.explanation}</p>
+          </div>
+        ` : '';
+
+        bodyEl.innerHTML = `
+          <div class="space-y-2">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Question</div>
+            <div class="text-lg sm:text-2xl font-bold text-white leading-relaxed">
+              ${tile.question}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            ${choicesHtml}
+          </div>
+
+          ${explanationHtml}
+
+          <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80">
+            <span class="text-xs text-slate-400">
+              Click a choice button above to test an answer, or reveal directly.
+            </span>
+            <button type="button" onclick="showMcAnswer('${tile.id}')"
+              class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition">
+              ${isAnswered ? 'Answer Revealed ✓' : 'Show Answer'}
+            </button>
+          </div>
+        `;
+      } else {
+        // Build Problem Solving Modal View
+        const allRevealed = tState.revealedSubItems.every(Boolean);
+
+        const subItemsHtml = tile.subItems.map((sub, sIdx) => {
+          const isSubRevealed = tState.revealedSubItems[sIdx];
+          return `
+            <div class="rounded-xl bg-board-card/90 border ${isSubRevealed ? 'border-emerald-500/45' : 'border-slate-700/80'} p-4 sm:p-5 space-y-3.5 transition">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-baseline gap-2.5 text-base sm:text-xl font-bold text-white">
+                  <span class="font-mono text-indigo-300">${sub.label}</span>
+                  <span>${sub.question}</span>
+                  <span class="text-xs sm:text-sm font-semibold text-slate-400">(${sub.points} ${sub.points === 1 ? 'pt' : 'pts'})</span>
+                </div>
+
+                <button type="button" onclick="toggleSubItemSolution('${tile.id}', ${sIdx})"
+                  class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold transition flex items-center gap-1.5 ${
+                    isSubRevealed
+                      ? 'bg-emerald-600/25 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-600/35'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow'
+                  }">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                  </svg>
+                  ${isSubRevealed ? 'Hide Proof Step' : 'Reveal Proof Step'}
+                </button>
+              </div>
+
+              ${isSubRevealed ? `
+                <div class="solution-box rounded-xl bg-slate-950/90 border border-emerald-500/35 p-4 text-slate-100 overflow-x-auto">
+                  <div class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 mb-2">Step-by-Step Proof</div>
+                  <div class="text-sm sm:text-base leading-relaxed space-y-1">${sub.solution.replace(/\n/g, '<br>')}</div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('');
+
+        bodyEl.innerHTML = `
+          <div class="rounded-xl bg-slate-900/90 border border-indigo-500/30 p-4 sm:p-5 space-y-1.5">
+            <div class="text-xs font-extrabold uppercase tracking-wider text-indigo-300">${tile.code}: ${tile.title}</div>
+            <div class="text-lg sm:text-2xl font-bold text-white leading-relaxed">
+              ${tile.prompt}
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${subItemsHtml}
+          </div>
+
+          <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800/80">
+            <span class="text-xs text-slate-400">
+              Reveal conditions one step at a time ($S_1$, $S_2$, $S_3$) for class discussion.
+            </span>
+            <button type="button" onclick="revealAllSubItemsForTile('${tile.id}')"
+              class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-bold shadow transition">
+              ${allRevealed ? 'All Steps Revealed ✓' : 'Reveal Full Proof'}
+            </button>
+          </div>
+        `;
+      }
+
+      // Render LaTeX math inside modal
+      renderMathIn(bodyEl);
+    }
+
+    // =========================================================================
+    // 7. INTERACTIVE TILE ANSWER HANDLERS
+    // =========================================================================
+    function selectMcChoice(tileId, choiceKey) {
+      const tile = quizTiles.find(t => t.id === tileId);
+      if (!tile) return;
+
+      const tState = state.tiles[tileId];
+      tState.selectedChoice = choiceKey;
+
+      if (choiceKey === tile.correctKey) {
+        tState.answered = true;
+        playTone('correct');
+      } else {
+        playTone('wrong');
+      }
+
+      renderBoard();
+      renderModalContent();
+    }
+
+    function showMcAnswer(tileId) {
+      const tile = quizTiles.find(t => t.id === tileId);
+      if (!tile) return;
+
+      const tState = state.tiles[tileId];
+      tState.selectedChoice = tile.correctKey;
+      tState.answered = true;
+      playTone('reveal');
+
+      renderBoard();
+      renderModalContent();
+    }
+
+    function toggleSubItemSolution(tileId, subIndex) {
+      const tState = state.tiles[tileId];
+      if (!tState) return;
+
+      tState.revealedSubItems[subIndex] = !tState.revealedSubItems[subIndex];
+      tState.answered = tState.revealedSubItems.every(Boolean);
+      playTone('reveal');
+
+      renderBoard();
+      renderModalContent();
+    }
+
+    function revealAllSubItemsForTile(tileId) {
+      const tState = state.tiles[tileId];
+      if (!tState) return;
+
+      tState.revealedSubItems = tState.revealedSubItems.map(() => true);
+      tState.answered = true;
+      playTone('reveal');
+
+      renderBoard();
+      renderModalContent();
+    }
+
+    // =========================================================================
+    // 8. GLOBAL BOARD CONTROLS (REVEAL ALL & RESET ALL)
+    // =========================================================================
+    function toggleRevealAll() {
+      state.revealAllActive = !state.revealAllActive;
+      const btnText = document.getElementById('reveal-all-text');
+
+      if (state.revealAllActive) {
+        quizTiles.forEach(tile => {
+          const tState = state.tiles[tile.id];
+          tState.viewed = true;
+          tState.answered = true;
+          if (tile.type === 'mc') {
+            tState.selectedChoice = tile.correctKey;
+          } else {
+            tState.revealedSubItems = tState.revealedSubItems.map(() => true);
+          }
+        });
+        btnText.textContent = 'Hide All Answers';
+        playTone('reveal');
+        showToast('All 30 points of answers and subspace proofs have been revealed for class review.');
+      } else {
+        initTileState();
+        btnText.textContent = 'Reveal All Answers';
+        playTone('click');
+        showToast('All answers hidden and tiles reset to unopened state.');
+      }
+
+      renderBoard();
+      if (state.activeTileIndex !== null) {
+        renderModalContent();
+      }
+    }
+
+    function requestResetBoard() {
+      showToast(
+        'Reset all 14 quiz tiles and clear current board progress?',
+        [
+          {
+            label: 'Confirm Reset',
+            style: 'bg-rose-600 hover:bg-rose-500 text-white font-bold',
+            onClick: () => {
+              state.revealAllActive = false;
+              document.getElementById('reveal-all-text').textContent = 'Reveal All Answers';
+              initTileState();
+              renderBoard();
+              if (state.activeTileIndex !== null) {
+                renderModalContent();
+              }
+              playTone('click');
+              hideToast();
+            }
+          },
+          {
+            label: 'Cancel',
+            style: 'bg-slate-700 hover:bg-slate-600 text-slate-200 font-medium',
+            onClick: hideToast
+          }
+        ]
+      );
+    }
+
+    // =========================================================================
+    // 9. COUNTDOWN TIMER CONTROLS
+    // =========================================================================
+    function formatSeconds(totalSec) {
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+      const display = document.getElementById('timer-display');
+      display.textContent = formatSeconds(state.timer.remainingSeconds);
+
+      if (state.timer.remainingSeconds <= 30 && state.timer.remainingSeconds > 0) {
+        display.classList.remove('text-white');
+        display.classList.add('text-amber-400');
+      } else if (state.timer.remainingSeconds === 0) {
+        display.classList.remove('text-white', 'text-amber-400');
+        display.classList.add('text-rose-400');
+      } else {
+        display.classList.remove('text-amber-400', 'text-rose-400');
+        display.classList.add('text-white');
+      }
+
+      const toggleBtn = document.getElementById('timer-toggle-btn');
+      const toggleText = document.getElementById('timer-toggle-text');
+      if (state.timer.isRunning) {
+        toggleText.textContent = 'Pause';
+        toggleBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+        toggleBtn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+      } else {
+        toggleText.textContent = 'Start';
+        toggleBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+        toggleBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+      }
+    }
+
+    function setTimerMinutes(mins) {
+      pauseTimer();
+      const clamped = Math.max(1, Math.min(180, Math.floor(mins)));
+      state.timer.defaultSeconds = clamped * 60;
+      state.timer.remainingSeconds = clamped * 60;
+
+      // Highlight active preset button
+      document.querySelectorAll('.timer-preset').forEach(btn => {
+        if (btn.textContent === `${clamped}m`) {
+          btn.className = 'timer-preset px-2 py-1 text-xs font-semibold rounded-md bg-sky-600/30 text-sky-300 border border-sky-500/40 transition';
+        } else {
+          btn.className = 'timer-preset px-2 py-1 text-xs font-semibold rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition';
+        }
+      });
+
+      updateTimerUI();
+      playTone('click');
+    }
+
+    function openCustomTimerPrompt() {
+      const banner = document.getElementById('toast-banner');
+      const msgEl = document.getElementById('toast-message');
+      const actionsEl = document.getElementById('toast-actions');
+
+      msgEl.innerHTML = `
+        <label for="custom-mins-input" class="font-semibold text-sky-300">Set Custom Timer (minutes):</label>
+        <input id="custom-mins-input" type="number" min="1" max="180" value="${Math.round(state.timer.defaultSeconds / 60)}"
+          class="w-20 px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-600 text-white font-mono text-sm focus:outline-none focus:border-sky-400" />
+      `;
+
+      actionsEl.innerHTML = '';
+
+      const applyBtn = document.createElement('button');
+      applyBtn.type = 'button';
+      applyBtn.textContent = 'Apply';
+      applyBtn.className = 'px-3 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition';
+      applyBtn.onclick = () => {
+        const val = parseInt(document.getElementById('custom-mins-input').value, 10);
+        if (!isNaN(val) && val > 0) {
+          setTimerMinutes(val);
+        }
+        hideToast();
+      };
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.className = 'px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition';
+      cancelBtn.onclick = hideToast;
+
+      actionsEl.appendChild(applyBtn);
+      actionsEl.appendChild(cancelBtn);
+      banner.classList.remove('hidden');
+
+      setTimeout(() => {
+        const inp = document.getElementById('custom-mins-input');
+        if (inp) inp.focus();
+      }, 30);
+    }
+
+    function toggleTimer() {
+      if (state.timer.isRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (state.timer.isRunning) return;
+      if (state.timer.remainingSeconds <= 0) {
+        state.timer.remainingSeconds = state.timer.defaultSeconds;
+      }
+      state.timer.isRunning = true;
+      updateTimerUI();
+      playTone('click');
+
+      state.timer.intervalId = setInterval(() => {
+        if (state.timer.remainingSeconds > 0) {
+          state.timer.remainingSeconds -= 1;
+          updateTimerUI();
+          if (state.timer.remainingSeconds === 0) {
+            pauseTimer();
+            playTone('alarm');
+            showToast('Time is up! The classroom quiz countdown has finished.');
+          }
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      state.timer.isRunning = false;
+      if (state.timer.intervalId) {
+        clearInterval(state.timer.intervalId);
+        state.timer.intervalId = null;
+      }
+      updateTimerUI();
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      state.timer.remainingSeconds = state.timer.defaultSeconds;
+      updateTimerUI();
+      playTone('click');
+    }
+
+    // =========================================================================
+    // 10. INLINE TOAST / MESSAGE BOX HELPER (No alert/confirm)
+    // =========================================================================
+    let toastTimeoutId = null;
+
+    function showToast(message, actions = null) {
+      if (toastTimeoutId) {
+        clearTimeout(toastTimeoutId);
+        toastTimeoutId = null;
+      }
+      const banner = document.getElementById('toast-banner');
+      const msgEl = document.getElementById('toast-message');
+      const actionsEl = document.getElementById('toast-actions');
+
+      msgEl.textContent = message;
+      actionsEl.innerHTML = '';
+
+      if (actions && Array.isArray(actions)) {
+        actions.forEach(act => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.textContent = act.label;
+          btn.className = `px-3 py-1.5 rounded-lg text-xs transition ${act.style}`;
+          btn.onclick = act.onClick;
+          actionsEl.appendChild(btn);
+        });
+      } else {
+        const dismissBtn = document.createElement('button');
+        dismissBtn.type = 'button';
+        dismissBtn.textContent = 'Dismiss';
+        dismissBtn.className = 'px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition';
+        dismissBtn.onclick = hideToast;
+        actionsEl.appendChild(dismissBtn);
+
+        toastTimeoutId = setTimeout(hideToast, 4500);
+      }
+
+      banner.classList.remove('hidden');
+    }
+
+    function hideToast() {
+      const banner = document.getElementById('toast-banner');
+      banner.classList.add('hidden');
+    }
+
+    // =========================================================================
+    // 11. KEYBOARD SHORTCUTS & INITIALIZATION
+    // =========================================================================
+    document.addEventListener('keydown', (e) => {
+      if (state.activeTileIndex === null) return;
+      if (e.key === 'Escape') {
+        closeModal();
+      } else if (e.key === 'ArrowRight') {
+        navigateTile(1);
+      } else if (e.key === 'ArrowLeft') {
+        navigateTile(-1);
+      }
+    });
+
+    // Close modal when clicking outside the modal card
+    document.getElementById('question-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'question-modal') {
+        closeModal();
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initTileState();
+      renderBoard();
+      updateTimerUI();
+    });
+  </script>
+</body>
+</html>
